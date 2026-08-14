@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+docs/superpowers/
+service-manager.js
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

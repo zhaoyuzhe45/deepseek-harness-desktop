@@ -1,0 +1,54 @@
+{
+  "name": "dsh-desktop",
+  "version": "1.0.0",
+  "description": "Windows desktop wrapper for dsh web",
+  "main": "src/main.js",
+  "author": "Zhao Yuzhe",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "check": "node --check src/main.js && node --check src/preload.js",
+    "icon": "node scripts/create-icon.js",
+    "dist": "npm run icon && electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "39.2.7",
+    "electron-builder": "26.0.12",
+    "png-to-ico": "3.0.1",
+    "rcedit": "4.0.1"
+  },
+  "build": {
+    "appId": "com.dsh.desktop",
+    "productName": "DSH Desktop",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "afterPack": "scripts/after-pack.js",
+    "files": [
+      "src/**/*",
+      "icon.png",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "DSH-Desktop-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DSH Desktop"
+    }
+  }
+}

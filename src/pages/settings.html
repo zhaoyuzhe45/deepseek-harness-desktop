@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>设置</title><link rel="stylesheet" href="styles.css"></head>
+<body><main><section class="panel"><div class="brand"><img src="../../icon.png" alt=""><div><h1>关闭行为</h1><p>选择点击窗口关闭按钮时执行的操作。</p></div></div><fieldset><legend>默认操作</legend><label class="choice"><input type="radio" name="behavior" value="ask"><span><strong>每次询问</strong><span>关闭时弹出确认窗口。</span></span></label><label class="choice"><input type="radio" name="behavior" value="tray"><span><strong>最小化到托盘</strong><span>隐藏窗口并保持 dsh web 运行。</span></span></label><label class="choice"><input type="radio" name="behavior" value="quit"><span><strong>完全退出</strong><span>关闭应用并终止 dsh web 服务。</span></span></label></fieldset><button id="save" type="button">保存设置</button><div id="status" class="status" role="status"></div></section></main><script src="settings.js"></script></body>
+</html>
