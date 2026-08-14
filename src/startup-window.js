@@ -1,8 +1,12 @@
 const STARTUP_CONTENT_SIZE = Object.freeze({ width: 520, height: 220 });
 
 function createStartupWindowOptions(baseOptions = {}) {
+  const windowOptions = { ...baseOptions };
+  delete windowOptions.titleBarStyle;
+  delete windowOptions.titleBarOverlay;
+
   return {
-    ...baseOptions,
+    ...windowOptions,
     width: STARTUP_CONTENT_SIZE.width,
     height: STARTUP_CONTENT_SIZE.height,
     useContentSize: true,

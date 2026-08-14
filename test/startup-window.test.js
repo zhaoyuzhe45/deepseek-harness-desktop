@@ -29,6 +29,16 @@ test('startup window uses exact compact frameless dimensions', () => {
   });
 });
 
+test('startup window removes the main window native title bar overlay', () => {
+  const options = createStartupWindowOptions({
+    titleBarStyle: 'hidden',
+    titleBarOverlay: { color: '#f4f6f8', height: 40 }
+  });
+
+  assert.equal('titleBarStyle' in options, false);
+  assert.equal('titleBarOverlay' in options, false);
+});
+
 test('startup sender authorization requires the live splash webContents and file URL', () => {
   const sender = { getURL: () => 'file:///loading.html' };
   const splashWindow = { isDestroyed: () => false, webContents: sender };
