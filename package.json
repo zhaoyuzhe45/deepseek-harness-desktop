@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Windows desktop wrapper for dsh web",
   "main": "src/main.js",
   "author": "Zhao Yuzhe",

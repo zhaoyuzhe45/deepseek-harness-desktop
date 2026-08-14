@@ -62,7 +62,7 @@ dsh web
 完成 Node.js 和 DSH 安装后，再运行：
 
 ```text
-DSH-Desktop-Setup-1.0.0-x64.exe
+DSH-Desktop-Setup-1.0.1-x64.exe
 ```
 
 安装程序支持选择安装目录，并会创建桌面快捷方式和开始菜单快捷方式。
@@ -142,7 +142,7 @@ npm run dist
 
 构建产物：
 
-- 安装包：`dist/DSH-Desktop-Setup-1.0.0-x64.exe`
+- 安装包：`dist/DSH-Desktop-Setup-1.0.1-x64.exe`
 - 免安装程序：`dist/win-unpacked/DSH Desktop.exe`
 
 ## 项目结构
