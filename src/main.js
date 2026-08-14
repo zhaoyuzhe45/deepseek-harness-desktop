@@ -3,6 +3,10 @@ const { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, shell, Tray } = 
 const { SERVICE_URL, ServiceManager } = require('./service-manager');
 const { SettingsStore } = require('./settings');
 const {
+  createStartupWindowOptions,
+  isAuthorizedStartupSender
+} = require('./startup-window');
+const {
   createTitleBarCss,
   SETTINGS_CONTENT_SIZE,
   TITLE_BAR_COLOR
@@ -11,11 +15,13 @@ const {
 const INTERNAL_PROTOCOL = 'file:';
 const TITLE_BAR_HEIGHT = 40;
 let mainWindow;
+let splashWindow;
 let settingsWindow;
 let tray;
 let settings;
 let service;
 let isQuitting = false;
+let isClosingSplashForTransition = false;
 
 function assetPath(...parts) {
   return path.join(__dirname, '..', ...parts);
@@ -67,6 +73,12 @@ function configureNavigation(window) {
 }
 
 function showMainWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    if (splashWindow.isMinimized()) splashWindow.restore();
+    splashWindow.show();
+    splashWindow.focus();
+    return;
+  }
   if (!mainWindow) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.show();
@@ -122,8 +134,52 @@ function createMainWindow() {
       if (action === 'quit') void quitApplication();
     });
   });
-  mainWindow.once('ready-to-show', showMainWindow);
-  void mainWindow.loadFile(pagePath('loading.html'));
+}
+
+function closeSplashWindow() {
+  if (!splashWindow || splashWindow.isDestroyed()) {
+    splashWindow = null;
+    return;
+  }
+  isClosingSplashForTransition = true;
+  splashWindow.destroy();
+  splashWindow = null;
+  isClosingSplashForTransition = false;
+}
+
+function createSplashWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.show();
+    splashWindow.focus();
+    return;
+  }
+
+  isClosingSplashForTransition = false;
+  splashWindow = new BrowserWindow(createStartupWindowOptions(secureWindowOptions({
+    title: '正在启动 DSH',
+    backgroundColor: '#ffffff',
+    center: true,
+    hasShadow: true
+  })));
+  splashWindow.setMenu(null);
+  configureNavigation(splashWindow);
+  splashWindow.on('close', (event) => {
+    if (isQuitting || isClosingSplashForTransition) return;
+    event.preventDefault();
+    void quitApplication();
+  });
+  splashWindow.on('closed', () => { splashWindow = null; });
+  splashWindow.once('ready-to-show', () => {
+    if (!splashWindow || splashWindow.isDestroyed()) return;
+    splashWindow.show();
+    splashWindow.focus();
+  });
+  void splashWindow.loadFile(pagePath('loading.html'));
+}
+
+function showStartupState() {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+  createSplashWindow();
 }
 
 function createSettingsWindow() {
@@ -164,6 +220,14 @@ function createTray() {
 }
 
 function registerIpc() {
+  ipcMain.handle('startup:minimize', (event) => {
+    if (!isAuthorizedStartupSender(event, splashWindow)) throw new Error('Unauthorized IPC sender');
+    splashWindow.minimize();
+  });
+  ipcMain.handle('startup:close', (event) => {
+    if (!isAuthorizedStartupSender(event, splashWindow)) throw new Error('Unauthorized IPC sender');
+    return quitApplication();
+  });
   ipcMain.handle('settings:get-close-behavior', (event) => {
     if (!event.sender.getURL().startsWith('file:')) throw new Error('Unauthorized IPC sender');
     return settings.getCloseBehavior();
@@ -174,20 +238,23 @@ function registerIpc() {
   });
   ipcMain.handle('service:retry', (event) => {
     if (!event.sender.getURL().startsWith('file:')) throw new Error('Unauthorized IPC sender');
+    showStartupState();
     return service.restart();
   });
 }
 
 function wireServiceEvents() {
   service.on('starting', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) void mainWindow.loadFile(pagePath('loading.html'));
+    showStartupState();
   });
   service.on('ready', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) void mainWindow.loadURL(SERVICE_URL);
+    closeSplashWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) void mainWindow.loadURL(SERVICE_URL).then(showMainWindow);
   });
   service.on('failed', (error) => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    void mainWindow.loadFile(pagePath('error.html'), { query: { message: error.message } });
+    closeSplashWindow();
+    void mainWindow.loadFile(pagePath('error.html'), { query: { message: error.message } }).then(showMainWindow);
   });
 }
 
@@ -203,6 +270,7 @@ if (!app.requestSingleInstanceLock()) {
     createMainWindow();
     createTray();
     wireServiceEvents();
+    showStartupState();
     service.start();
   });
   app.on('activate', showMainWindow);
