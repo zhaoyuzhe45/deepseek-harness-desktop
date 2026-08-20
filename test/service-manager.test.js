@@ -2,7 +2,14 @@ const assert = require('node:assert/strict');
 const { EventEmitter, once } = require('node:events');
 const test = require('node:test');
 
-const { ServiceManager } = require('../src/service-manager');
+const { ServiceManager, DSH_COMMAND } = require('../src/service-manager');
+
+test('uses PowerShell to run the current dsh.ps1 command without opening a browser', () => {
+  assert.equal(DSH_COMMAND.file, 'powershell.exe');
+  assert.deepEqual(DSH_COMMAND.args, [
+    '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', 'dsh web --no-open'
+  ]);
+});
 
 function childProcess(pid = 100) {
   const child = new EventEmitter();
