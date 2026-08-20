@@ -3,10 +3,11 @@ const test = require('node:test');
 
 const { buildOwnerQueryScript, parseOwnerPids, releasePort } = require('../src/port-cleanup');
 
-test('buildOwnerQueryScript separates the query assignment from JSON conversion', () => {
+test('buildOwnerQueryScript returns an empty list when the PowerShell query fails', () => {
   const script = buildOwnerQueryScript(3080);
-  assert.match(script, /-Unique\);\s*ConvertTo-Json/);
-  assert.match(script, /\$ErrorActionPreference\s*=\s*'SilentlyContinue'/);
+  assert.match(script, /-Unique\);\s*}\s*catch/);
+  assert.match(script, /\$ErrorActionPreference\s*=\s*'Stop'/);
+  assert.match(script, /catch\s*\{\s*\$owners\s*=\s*@\(\)\s*\}/);
   assert.match(script, /ConvertTo-Json -Compress -InputObject \$owners/);
 });
 
