@@ -6,6 +6,8 @@ const { buildOwnerQueryScript, parseOwnerPids, releasePort } = require('../src/p
 test('buildOwnerQueryScript separates the query assignment from JSON conversion', () => {
   const script = buildOwnerQueryScript(3080);
   assert.match(script, /-Unique\);\s*ConvertTo-Json/);
+  assert.match(script, /\$ErrorActionPreference\s*=\s*'SilentlyContinue'/);
+  assert.match(script, /ConvertTo-Json -Compress -InputObject \$owners/);
 });
 
 test('parseOwnerPids accepts JSON numbers and removes duplicates', () => {

@@ -20,6 +20,7 @@ function parseOwnerPids(output) {
 
 function buildOwnerQueryScript(port) {
   return [
+    "$ErrorActionPreference = 'SilentlyContinue';",
     `$owners = @(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue`,
     '| Select-Object -ExpandProperty OwningProcess -Unique);',
     'ConvertTo-Json -Compress -InputObject $owners'
