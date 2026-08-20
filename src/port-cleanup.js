@@ -18,29 +18,26 @@ function parseOwnerPids(output) {
   return normalizePids(JSON.parse(text));
 }
 
-function buildOwnerQueryScript(port) {
-  return [
-    "$ErrorActionPreference = 'Stop';",
-    'try {',
-    `  $owners = @(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction Stop`,
-    '    | Select-Object -ExpandProperty OwningProcess -Unique);',
-    '} catch { $owners = @() }',
-    'ConvertTo-Json -Compress -InputObject $owners'
-  ].join(' ');
+function parseNetstatOwners(output, port) {
+  const owners = [];
+  for (const line of String(output ?? '').split(/\r?\n/)) {
+    const fields = line.trim().split(/\s+/);
+    if (fields.length < 5 || fields[0].toUpperCase() !== 'TCP') continue;
+    const state = fields[3].toUpperCase();
+    const local = fields[1].replace(/^\[|\]$/g, '');
+    const localPort = Number(local.slice(local.lastIndexOf(':') + 1));
+    const pid = Number(fields[4]);
+    if (state === 'LISTENING' && localPort === port && Number.isSafeInteger(pid) && pid > 0) owners.push(pid);
+  }
+  return [...new Set(owners)];
 }
 
 async function queryPortOwners(port) {
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error(`Invalid TCP port: ${port}`);
   }
-  const script = buildOwnerQueryScript(port);
-  const encoded = Buffer.from(script, 'utf16le').toString('base64');
-  const { stdout } = await execFileAsync(
-    'powershell.exe',
-    ['-NoProfile', '-NonInteractive', '-EncodedCommand', encoded],
-    { windowsHide: true, timeout: 10000 }
-  );
-  return parseOwnerPids(stdout);
+  const { stdout } = await execFileAsync('netstat.exe', ['-ano', '-p', 'tcp'], { windowsHide: true, timeout: 10000 });
+  return parseNetstatOwners(stdout, port);
 }
 
 async function killProcessTree(pid) {
@@ -76,9 +73,8 @@ async function releasePort(port, dependencies = {}) {
 }
 
 module.exports = {
-  buildOwnerQueryScript,
   killProcessTree,
-  parseOwnerPids,
+  parseNetstatOwners,
   queryPortOwners,
   releasePort
 };

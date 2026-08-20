@@ -1,19 +1,17 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { buildOwnerQueryScript, parseOwnerPids, releasePort } = require('../src/port-cleanup');
+const { parseNetstatOwners, releasePort } = require('../src/port-cleanup');
 
-test('buildOwnerQueryScript returns an empty list when the PowerShell query fails', () => {
-  const script = buildOwnerQueryScript(3080);
-  assert.match(script, /-Unique\);\s*}\s*catch/);
-  assert.match(script, /\$ErrorActionPreference\s*=\s*'Stop'/);
-  assert.match(script, /catch\s*\{\s*\$owners\s*=\s*@\(\)\s*\}/);
-  assert.match(script, /ConvertTo-Json -Compress -InputObject \$owners/);
-});
-
-test('parseOwnerPids accepts JSON numbers and removes duplicates', () => {
-  assert.deepEqual(parseOwnerPids('[42, 17, 42]'), [42, 17]);
-  assert.deepEqual(parseOwnerPids(''), []);
+test('parseNetstatOwners finds unique listening PIDs for the requested local port', () => {
+  const output = [
+    '  TCP    127.0.0.1:3080       0.0.0.0:0       LISTENING       42',
+    '  TCP    [::1]:3080           [::]:0          LISTENING       42',
+    '  TCP    127.0.0.1:3081       0.0.0.0:0       LISTENING       17',
+    '  TCP    127.0.0.1:3080       127.0.0.1:50000 ESTABLISHED     99'
+  ].join('\r\n');
+  assert.deepEqual(parseNetstatOwners(output, 3080), [42]);
+  assert.deepEqual(parseNetstatOwners('', 3080), []);
 });
 
 test('releasePort returns without killing when the port has no owner', async () => {
