@@ -5,6 +5,7 @@ const test = require('node:test');
 
 const {
   createTitleBarCss,
+  DARK_TITLE_BAR_COLOR,
   SETTINGS_CONTENT_SIZE,
   TITLE_BAR_COLOR
 } = require('../src/window-style');
@@ -17,6 +18,11 @@ test('title bar CSS creates a draggable region without covering caption buttons'
   assert.match(css, /height:\s*40px/);
   assert.equal(TITLE_BAR_COLOR, '#f4f6f8');
   assert.match(css, /background:\s*#f4f6f8/);
+});
+
+test('title bar CSS supports dark mode colors', () => {
+  const css = createTitleBarCss(40, true);
+  assert.match(css, new RegExp(`background:\\s*${DARK_TITLE_BAR_COLOR}`));
 });
 
 test('settings page uses fixed complete dimensions without scrollbars', () => {

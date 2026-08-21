@@ -1,5 +1,5 @@
 const path = require('node:path');
-const { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, shell, Tray } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, nativeTheme, shell, Tray } = require('electron');
 const { SERVICE_URL, ServiceManager } = require('./service-manager');
 const { SettingsStore } = require('./settings');
 const {
@@ -32,14 +32,15 @@ function pagePath(name) {
 }
 
 function secureWindowOptions(extra = {}) {
+  const dark = nativeTheme.shouldUseDarkColors;
   return {
     icon: assetPath('icon.png'),
     show: false,
-    backgroundColor: TITLE_BAR_COLOR,
+    backgroundColor: dark ? '#202124' : TITLE_BAR_COLOR,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: TITLE_BAR_COLOR,
-      symbolColor: '#17212b',
+      color: dark ? '#202124' : TITLE_BAR_COLOR,
+      symbolColor: dark ? '#f1f3f4' : '#17212b',
       height: TITLE_BAR_HEIGHT
     },
     webPreferences: {
@@ -54,8 +55,19 @@ function secureWindowOptions(extra = {}) {
 
 function configureTitleBarInset(window) {
   window.webContents.on('did-finish-load', () => {
-    void window.webContents.insertCSS(createTitleBarCss(TITLE_BAR_HEIGHT));
+    void window.webContents.insertCSS(createTitleBarCss(TITLE_BAR_HEIGHT, nativeTheme.shouldUseDarkColors));
   });
+}
+
+function updateWindowTheme() {
+  const dark = nativeTheme.shouldUseDarkColors;
+  const color = dark ? '#202124' : TITLE_BAR_COLOR;
+  const symbolColor = dark ? '#f1f3f4' : '#17212b';
+  for (const window of [mainWindow, settingsWindow]) {
+    if (!window || window.isDestroyed()) continue;
+    window.setTitleBarOverlay({ color, symbolColor, height: TITLE_BAR_HEIGHT });
+    void window.webContents.insertCSS(createTitleBarCss(TITLE_BAR_HEIGHT, dark));
+  }
 }
 
 function configureNavigation(window) {
@@ -263,6 +275,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', showMainWindow);
   app.whenReady().then(() => {
+    nativeTheme.on('updated', updateWindowTheme);
     app.setAppUserModelId('com.dsh.desktop');
     settings = new SettingsStore(path.join(app.getPath('userData'), 'settings.json'));
     service = new ServiceManager();

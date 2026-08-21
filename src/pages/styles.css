@@ -1,9 +1,19 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
   color: #17212b;
   background: #f4f6f8;
   letter-spacing: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { color: #f1f3f4; background: #202124; }
+  body.startup-page { background: #202124; }
+  p, .choice span { color: #b8c0c8; }
+  .panel { background: #292a2d; border-color: #3c4043; box-shadow: 0 12px 36px rgba(0, 0, 0, .28); }
+  .startup-window-controls button { color: #c8cdd2; }
+  .startup-window-controls button:hover { color: #fff; background: #3c4043; }
+  .error { background: #3a2424; color: #ffb4ab; }
 }
 
 * { box-sizing: border-box; }
