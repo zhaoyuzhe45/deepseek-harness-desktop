@@ -169,7 +169,7 @@ function createSplashWindow() {
   isClosingSplashForTransition = false;
   splashWindow = new BrowserWindow(createStartupWindowOptions(secureWindowOptions({
     title: '正在启动 DSH',
-    backgroundColor: '#ffffff',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#202124' : '#ffffff',
     center: true,
     hasShadow: true
   })));

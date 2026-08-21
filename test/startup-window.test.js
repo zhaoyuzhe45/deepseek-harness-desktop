@@ -58,6 +58,9 @@ test('startup page hides overflow and separates drag and control regions', () =>
   assert.match(styles, /body\.startup-page\s*\{[^}]*overflow:\s*hidden/s);
   assert.match(styles, /\.startup-drag-region\s*\{[^}]*-webkit-app-region:\s*drag/s);
   assert.match(styles, /\.startup-window-controls\s*\{[^}]*-webkit-app-region:\s*no-drag/s);
+  assert.match(styles, /prefers-color-scheme:\s*dark/);
+  assert.match(styles, /body\.startup-page\s*\{\s*background:\s*#202124/s);
+  assert.match(mainSource, /backgroundColor:\s*nativeTheme\.shouldUseDarkColors \? '#202124' : '#ffffff'/);
 });
 
 test('startup page exposes accessible minimize and close controls', () => {

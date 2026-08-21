@@ -99,3 +99,14 @@ legend { margin-bottom: 12px; font-size: 14px; font-weight: 650; }
 .choice strong { display: block; font-size: 14px; }
 .choice span { display: block; margin-top: 3px; color: #65717c; font-size: 12px; line-height: 1.45; }
 .status { min-height: 22px; margin-top: 12px; color: #267044; font-size: 13px; }
+
+@media (prefers-color-scheme: dark) {
+  :root { color: #f1f3f4; background: #202124; }
+  body, body.startup-page { background: #202124; }
+  p, .choice span { color: #b8c0c8; }
+  .panel { background: #292a2d; border-color: #3c4043; box-shadow: 0 12px 36px rgba(0, 0, 0, .28); }
+  .startup-window-controls button { color: #c8cdd2; }
+  .startup-window-controls button:hover { color: #fff; background: #3c4043; }
+  .error { background: #3a2424; color: #ffb4ab; }
+  .spinner { border-color: #45494d; border-top-color: #39b7c4; }
+}
